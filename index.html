@@ -180,49 +180,58 @@
         // Function to parse the questions from the provided text format
         function parseQuestions(text) {
             const questions = [];
+            // Split by '+++++' to get individual raw question blocks
             const rawQuestions = text.split('+++++').filter(q => q.trim() !== '');
 
             console.log(`[Парсер] Найдено блоков с вопросами (разделитель +++++): ${rawQuestions.length}`);
 
             rawQuestions.forEach((rawQ, index) => {
+                // Split each block by '====' to separate question from options
                 const parts = rawQ.split('====').map(p => p.trim());
 
                 if (parts.length <= 1) {
+                    // If no '====' or only one part, it's not a valid question
                     console.warn(`[Парсер] Пропущен вопрос #${index + 1}: Отсутствуют разделители "====" между вопросом и ответами. Блок:`, rawQ.substring(0, 100) + '...');
                     return;
                 }
 
                 const questionText = parts[0];
-                const options = parts.slice(1);
+                const options = parts.slice(1); // All parts after the first are options
                 let correctOption = null;
                 const formattedOptions = [];
                 let foundCorrectMarker = false;
 
                 options.forEach(opt => {
                     if (opt.startsWith('#')) {
-                        correctOption = opt.substring(1);
-                        formattedOptions.push(opt.substring(1));
+                        // If an option starts with '#', it's the correct one
+                        if (foundCorrectMarker) {
+                            console.warn(`[Парсер] Вопрос #${index + 1}: Найдено несколько правильных ответов (маркер "#"). Будет использован первый. Блок:`, rawQ.substring(0, 100) + '...');
+                        }
+                        correctOption = opt.substring(1).trim(); // Remove '#' and trim whitespace
+                        formattedOptions.push(opt.substring(1).trim());
                         foundCorrectMarker = true;
-                    } else {
-                        formattedOptions.push(opt);
+                    } else if (opt.length > 0) { // Add non-empty options
+                        formattedOptions.push(opt.trim());
                     }
                 });
 
-                if (foundCorrectMarker && correctOption !== null) {
+                // Only add the question if a correct answer was found and it's valid
+                if (foundCorrectMarker && correctOption !== null && questionText.length > 0 && formattedOptions.length > 0) {
                     questions.push({
                         question: questionText,
                         options: [...formattedOptions], // Create a shallow copy for shuffling
                         correctAnswer: correctOption
                     });
                 } else {
-                    console.warn(`[Парсер] Пропущен вопрос #${index + 1}: Отсутствует правильный ответ (маркер "#") или несколько "#". Блок:`, rawQ.substring(0, 100) + '...');
+                    console.warn(`[Парсер] Пропущен вопрос #${index + 1}: Отсутствует правильный ответ (маркер "#") или вопрос/варианты пусты. Блок:`, rawQ.substring(0, 100) + '...');
                 }
             });
             console.log(`[Парсер] Успешно обработано вопросов: ${questions.length}`);
             return questions;
         }
 
-        // Your raw question data from Нал.Физ.лиц-1.txt
+        // ВАЖНО: Весь текст из вашего файла 'Нал.Физ.лиц-1.txt' вставляется сюда.
+        // Убедитесь, что он находится МЕЖДУ обратными кавычками (`)
         const rawQuizData = `
 +++++
 Индивидуальный предприниматель является ?
@@ -958,8 +967,8 @@
         }
 
         function restartQuiz() {
-            shuffleArray(questions);
-            shuffledQuestions = questions;
+            shuffleArray(questions); // Shuffle the original parsed questions
+            shuffledQuestions = questions; // Reassign to shuffled list
             currentQuestionIndex = 0;
             score = 0;
             selectedOption = null;
