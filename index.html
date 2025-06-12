@@ -186,12 +186,12 @@
             console.log(`[Парсер] Найдено блоков с вопросами (разделитель +++++): ${rawQuestions.length}`);
 
             rawQuestions.forEach((rawQ, index) => {
-                // Split each block by '====' to separate question from options
-                const parts = rawQ.split('====').map(p => p.trim());
+                // ИСПРАВЛЕНИЕ: Изменено с '====' на '=====' для соответствия вашему формату
+                const parts = rawQ.split('=====').map(p => p.trim());
 
                 if (parts.length <= 1) {
-                    // If no '====' or only one part, it's not a valid question
-                    console.warn(`[Парсер] Пропущен вопрос #${index + 1}: Отсутствуют разделители "====" между вопросом и ответами. Блок:`, rawQ.substring(0, 100) + '...');
+                    // If no '=====' or only one part, it's not a valid question
+                    console.warn(`[Парсер] Пропущен вопрос #${index + 1}: Отсутствуют разделители "=====" между вопросом и ответами. Блок:`, rawQ.substring(0, 100) + '...');
                     return;
                 }
 
@@ -861,11 +861,14 @@
 
         function displayQuestion() {
             if (shuffledQuestions.length === 0) {
-                questionTextElement.textContent = "Ошибка загрузки вопросов. Проверьте данные теста в консоли (F12) на наличие предупреждений.";
+                questionTextElement.textContent = "Ошибка загрузки вопросов. Проверьте данные теста в консоли (F12) на наличие предупреждений. Возможно, неправильное форматирование вопросов.";
                 optionsContainer.innerHTML = '';
                 checkAnswerBtn.style.display = 'none';
                 nextQuestionBtn.style.display = 'none';
                 restartQuizBtn.style.display = 'block';
+                currentQElement.textContent = '0';
+                totalQElement.textContent = '0';
+                questionNumberElement.style.display = 'block';
                 return;
             }
 
